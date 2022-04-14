@@ -4,14 +4,13 @@
 # envirotyping
 
 <!-- badges: start -->
-
 <!-- badges: end -->
 
 The `envirotyping` package includes useful functions for gathering and
 manipulating environmental data (weather, climate, soil data, etc.) for
 use in quantitative genetic or plant breeding modeling and predictions.
 You can find examples of functions in this package here:
-<https://pages.github.umn.edu/IAA/envirotyping/>
+<https://pages.github.umn.edu/neyha001/envirotyping/>
 
 ## Installation
 
@@ -33,11 +32,11 @@ Finally, use `devtools` to install `envirotyping`:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("IAA/envirotyping")
+devtools::install_github("neyhartj/envirotyping")
 ```
 
 ## Examples
 
 See the vignette [`envirotyping`
-Workflow](https://pages.github.umn.edu/IAA/envirotyping/articles/using_envirotyping.html)
+Workflow](https://github.com/neyhartj/envirotyping/articles/using_envirotyping.html)
 for specific examples.
