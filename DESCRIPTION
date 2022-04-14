@@ -1,0 +1,41 @@
+Package: envirotyping
+Title: Gathering and Manipulating Environmental Data for Quantitative Genetics Modeling and Prediction
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Jeff",
+             family = "Neyhart",
+             role = c("aut", "cre"),
+             email = "neyha001@umn.edu"))
+Description: Provides functions for gathering, maniputating, and readying environmental data for use in quantitative genetic or plant breeding applications
+License: MIT + file LICENSE
+URL: https://github.umn.edu/neyha001/envirotyping
+Encoding: UTF-8
+LazyData: true
+Depends: 
+    R (>= 3.5)
+Imports:
+    daymetr,
+    nasapower,
+    raster,
+    sp,
+    APSIM,
+    apsimx,
+    DBI,
+    RSQLite,
+    MASS,
+    tibble,
+    dplyr,
+    tidyr,
+    modelr,
+    stringr,
+    readr,
+    lme4
+Suggests: 
+    knitr,
+    rmarkdown,
+    slider,
+    sommer
+Remotes:
+    github::dlebauer/rhwsd
+VignetteBuilder: knitr
+RoxygenNote: 7.1.1
