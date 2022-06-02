@@ -154,7 +154,7 @@ ec_variable_selection <- function(pheno.data, env.data, ec.matrix, env.col, gen.
     base_fit <- lmer(formula = base_form, data = pheno.data1)
 
     # Define the scope
-    scope <- list(lower = formula(base_fit), upper = reformulate(c(paste0("(1|", gen.col, ")"), colnames(ec.matrix1)), response = "value"))
+    scope <- list(lower = formula(base_fit), upper = reformulate(c(paste0("(1|", gen.col, ")"), colnames(ec.matrix1)), response = y.col))
 
     # Use the stepwise variable selection
     var_sel_out <- stepwise_rfa(object = base_fit, data = pheno.data1, env.col = env.col, scope = scope,
@@ -163,32 +163,66 @@ ec_variable_selection <- function(pheno.data, env.data, ec.matrix, env.col, gen.
     # Get the optimized variables
     optVariables <- var_sel_out$optVariables
 
+    # Test for interactions
+    lower_terms <- c(paste0("(1|", gen.col, ")"), optVariables)
+    upper_terms <- c(lower_terms, paste0("(0 + ", optVariables, " | ", gen.col, ")"))
+    scope1 <- list(lower = reformulate(termlabels = lower_terms, response = val.col),
+                   upper = reformulate(termlabels = upper_terms, response = val.col))
+
+    # Refit the base model
+    base_fit1 <- update(base_fit, formula = scope1$lower)
+
+    # Rerun the variable selection
+    var_sel_out1 <- stepwise_rfa(object = base_fit1, data = pheno.data1, env.col = env.col, scope = scope1,
+                                 metric = "RMSE", cv.indices = cv.indices)
+
+    # Get the optimized variables
+    optVariables1 <- var_sel_out1$optVariables
+
+    # Combine all optimized variables
+    allOptVariables <- union(optVariables, optVariables1)
+
     # Designate variable importance
-    if (length(optVariables) != 0) {
-      # Add importance to optVariables
-      var_sel_out$optVariables <- matrix(1, nrow = length(optVariables), dimnames = list(optVariables, "importance"))
+    if (length(allOptVariables) != 0) {
+      optVariableImportance <- matrix(1, nrow = length(allOptVariables), dimnames = list(allOptVariables, "importance"))
 
     } else {
-      var_sel_out$optVariables <- matrix(1, nrow = 0, ncol = 1, dimnames = list(NULL, "importance"))
+      optVariableImportance <- matrix(1, nrow = 0, ncol = 1, dimnames = list(NULL, "importance"))
 
     }
 
+    # Merge stepTestResults
+    stepTestResults <- c(var_sel_out$stepTestResults, var_sel_out1$stepTestResults)
+
     # Assemble the cv step results
-    CVStepResults <- rbind(rapid_crossv(object = base_fit, cv.indices = cv.indices),
-                           do.call("rbind", lapply(X = var_sel_out$stepTestResults, FUN = "[", 1, , drop = FALSE)))
+    CVStepResults <- rbind(rapid_crossv(object = base_fit, cv.indices = cv.indices, rapid = FALSE),
+                           do.call("rbind", lapply(X = stepTestResults, FUN = "[", 1, , drop = FALSE)))
 
     # Remove any rows where the row-name is '(none)'
     CVStepResults <- CVStepResults[row.names(CVStepResults) != "(none)",, drop = FALSE]
 
-    # Designate row.names for this matrix
-    stepFormula <- as.formula(paste0("~ ", var_sel_out$stepTraverseFormula))
+    # Get the complete traverse formula
+    stepFormula <- reformulate(var_sel_out1$stepTraverseFormula)
     addSub <- apply(X = attr(terms(stepFormula), "factors"), MARGIN = 1, FUN = function(x) ifelse(any(x == 1), "+", "-"))
     rownames(CVStepResults) <- paste(addSub, names(addSub))
 
+    # Separate variables into main effect versus interaction
+    # List of all terms
+    all_terms <- row.names(optVariableImportance)
+    # Remove those with bars; these are main effect variables
+    main_effect_terms <- all_terms[!grepl(pattern = "\\|", x = all_terms)]
+
+    # Get the interaction terms
+    interaction_terms <- setdiff(all_terms, main_effect_terms)
+    # Remove bars
+    interaction_terms <- intersect(all.names(reformulate(interaction_terms)), main_effect_terms)
+
+
     # Reorganize into a output list
     output <- list(
-      optVariables = var_sel_out$optVariables,
-      finalCVResults = var_sel_out$finalResults,
+      optVariables = optVariableImportance,
+      variableEffects = list(main_effect = main_effect_terms, interaction_effect = interaction_terms),
+      finalCVResults = var_sel_out1$finalResults,
       CVStepResults = CVStepResults
     )
 
@@ -353,7 +387,46 @@ ec_variable_selection_slide <- function(pheno.data, env.data, env.col, gen.col, 
 
 
 
+#' Output a table of selected environmental covariates
+#'
+#' @description
+#' Saves a table of the output from the \code{\link{ec_variable_selection}} or \code{\link{ec_variable_selection_slide}} functions.
+#'
+#' @param x The output object of the \code{\link{ec_variable_selection}} or \code{\link{ec_variable_selection_slide}} functions.
+#' @param file File or connection to write to. If NULL (default), the function simply returns a tidy data frame.
+#'
+#'
+#' @export
+#'
+save_ec_selection_table <- function(x, file = NULL) {
+  # Error checking
+  if (all(c("optVariables", "finalCVResults", "CVStepResults") %in% names(x))) {
+  } else if (all(c("timeframeFinalCVResults", "variableSelectionResults", "ecMatrixSelected") %in% names(x))) {
+  } else {
+    stop ("The input 'x' does not appear to be the output of the 'ec_variable_selection' or 'ec_variable_selection_slide' functions.")
+  }
 
+  # List of all terms
+  all_terms <- row.names(x$optVariables)
+  # Remove those with bars; these are main effect variables
+  main_effect_terms <- all_terms[!grepl(pattern = "\\|", x = all_terms)]
+
+  # Get the interaction terms
+  interaction_terms <- setdiff(all_terms, main_effect_terms)
+  # Remove bars
+  interaction_terms <- intersect(all.names(reformulate(interaction_terms)), main_effect_terms)
+
+  # Create a tidy table
+  ec_tidy_table <- data.frame(covariate = main_effect_terms, effect = ifelse(main_effect_terms %in% interaction_terms, "E & GE", "E"))
+
+  # Save the table if a file path is provided
+  if (!is.null(file)) {
+    write.csv(x = ec_tidy_table, file = file, quote = FALSE, row.names = FALSE)
+    return(invisible())
+  } else {
+    return(ec_tidy_table)
+  }
+}
 
 
 

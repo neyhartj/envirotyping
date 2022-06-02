@@ -14,7 +14,7 @@
 #' @details
 #' Note that inputs for this function are only sparsely checked for correctness.
 #'
-#'
+#' @importFrom lme4 findbars
 #'
 #' @export
 #'
@@ -41,12 +41,16 @@ stepwise_rfa <- function(object, data, env.col, scope, metric = c("RMSE", "R2"),
   # Initiate an object to store the current formula
   form_use <- object_formula
   # Define the available covariates and the used covariates
-  cov_available <- add.scope(terms1 = scope$lower, scope$upper)
+  cov_available <- add.scope(terms1 = scope$lower, terms2 = scope$upper)
+  # Add parentheses if missing
+  barsnoparen <- grepl(pattern = "\\|", x = cov_available) & !grepl(pattern = "\\(", x = cov_available)
+  cov_available[barsnoparen] <- paste0("(", cov_available[barsnoparen], ")")
+
   # Vector of covariates that were removed by backwards elimination
   cov_used <- cov_remove <- cov_retain <- NULL
 
   ## Create a pseudoformula that documents the addition/removal of covariates
-  traverse_formula <- list("line_name")
+  traverse_formula <- list(as.character(scope$lower)[3])
 
   # Define a flag to stop the algorithm
   optMetric <- FALSE
@@ -107,6 +111,7 @@ stepwise_rfa <- function(object, data, env.col, scope, metric = c("RMSE", "R2"),
         termsplit <- strsplit(x = term, split = ":")[[1]]
         term <- c(termsplit[sapply(X = data[termsplit], inherits, "numeric")], term)
       }
+
       # Construct a new formula
       form1 <- update.formula(old = form_use, new = reformulate(termlabels = c(".", term)))
       # Update the model and return
@@ -157,6 +162,13 @@ stepwise_rfa <- function(object, data, env.col, scope, metric = c("RMSE", "R2"),
        stepTestResults = step_out, stepTraverseFormula = paste0(unlist(traverse_formula), collapse = " "))
 
 } # Close the function
+
+
+
+
+
+
+
 
 
 

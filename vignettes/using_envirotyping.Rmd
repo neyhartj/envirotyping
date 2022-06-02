@@ -183,10 +183,11 @@ trial_crop_stages <- define_growth_stages(
   growth.stage.delim = "zadok", 
   stages = barley_stages
 )
-
 ```
 
-```{r define.growth.stages.alt}
+```{r define.growth.stages.alt, eval=FALSE, include=FALSE}
+
+# This code block is for testing purposes only.
 
 daily_weather2 <- daily_weather1 %>% 
   mutate(planting_date_yday = lubridate::yday(planting_date), 
@@ -207,7 +208,6 @@ trial_crop_stages <- define_growth_stages(
   growth.stage.delim = "dap", 
   stages = barley_stages
 )
-
 
 
 ```
@@ -534,15 +534,30 @@ variable_selection_out <- ec_variable_selection(
 
 This function returns a list containing the results of the variable selection and the names of the selected covariables. See the help file for this function for more information about its output.
 
+You can save a tidy table of the selected environmental covariates by using the `save_ec_selection_table()` function. If you provide a file path using the `file` argument, the tidy table will be saved as a .csv file. Otherwise, the function returns the tidy table as a data frame.
+
+```{r save.covariates}
+ec_table <- save_ec_selection_table(x = variable_selection_out)
+ec_table
+
+```
+
+In the above example, the tidy table indicates whether the covariate should be used to model the main environmental effect or the GxE interaction effect.
+
 You can then use the names of the selected covariables to subset the full environmental covariable matrix and calculate a "relationship" matrix based only on those covariables:
 
 ```{r lm.ec.relmats}
 # Subset the environmental covariable matrix based on the results of the 
 # variable selection operation
-daily_ecmat1 <- subset.matrix(x = daily_ecmat, select = row.names(variable_selection_out$optVariables))
+# First select the main effect variables
+daily_ecmat_main <- subset.matrix(x = daily_ecmat, select = variable_selection_out$variableEffects$main_effect)
+# Next interaction variables
+daily_ecmat_interaction <- subset.matrix(x = daily_ecmat, select = variable_selection_out$variableEffects$interaction_effect)
 
 # Create the relationship matrix
-env_sel_relmat <- ec_relmat(ec.matrix = daily_ecmat1)
+env_sel_relmat_main <- ec_relmat(ec.matrix = daily_ecmat_main)
+env_sel_relmat_interaction <- ec_relmat(ec.matrix = daily_ecmat_interaction)
+
 ```
 
 ### Model historical environmental covariables
@@ -620,10 +635,10 @@ To make predictions in previously unobserved environments, we use the environmen
 
 ```{r predict.unobs.env}
 # Rename the relationship matrices for consistency
-Emat <- env_sel_relmat
+Emat <- env_sel_relmat_main
 Gmat <- Gmat
 # The kronecker product models the interaction between the two matrices
-GEmat <- kronecker(X = Gmat, Y = Emat, make.dimnames = TRUE)
+GEmat <- kronecker(X = Gmat, Y = env_sel_relmat_interaction, make.dimnames = TRUE)
 
 # Subset phenotype data based on the genotypes that are in the Gmat
 pheno_data_train2 <- subset(pheno_data_train1, line_name %in% row.names(Gmat))
