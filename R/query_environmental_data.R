@@ -41,22 +41,24 @@ get_weather_data <- function(trial.info, source = c("daymet", "nasapower"), verb
   # Create an output list for each trial
   output <- vector("list", length = nTrials)
 
-  # KATS note: We should create functions query_nasapower() and query_daymet() with the truly unique code 
-  # needed to extract code from those two sources. As it stands, there is a lot of cut and pasted code in 
-  # the clauses "if (source == "nasapower")" vs "else if (source = "daymet")". This will be helpful to 
-  # avoid poorly maintainable code as we expand to other sources (e.g., "else if (source = "twc")". 
-    
+  # KATS note: We should create functions query_nasapower() and query_daymet() with the truly unique code
+  # needed to extract code from those two sources. As it stands, there is a lot of cut and pasted code in
+  # the clauses "if (source == "nasapower")" vs "else if (source = "daymet")". This will be helpful to
+  # avoid poorly maintainable code as we expand to other sources (e.g., "else if (source = "twc")".
+
   # Control flow based on site
   if (source == "nasapower") {
+
+    stop("Querying the 'nasapower' database is not yet supported.")
 
     ## Add the needed pars to the parameters list
     needed_pars <- c("mint" = "TS_MIN", "maxt" = "TS_MAX", "radn" = "ALLSKY_SFC_SW_DWN", "rain" = "PRECTOT")
     # Add names for the parameters (default is to lower)
     # KATS: pars is never defined. Why does this next line not flag an error?
-    pars1 <- setNames(pars, tolower(pars))
+    pars1 <- setNames(needed_pars, tolower(needed_pars))
 
     # Rename pars
-    # KATS: Please expand the above 2-word comment to explain what you are trying to accomplish with 
+    # KATS: Please expand the above 2-word comment to explain what you are trying to accomplish with
     # these three lines.
     pars2 <- union(needed_pars, pars1)
     names(pars2)[needed_pars %in% pars2] <- names(needed_pars)[needed_pars %in% pars2]
@@ -213,11 +215,11 @@ get_historical_weather_data <- function(location.info, start.year, end.year, sou
   # Check location.info class
   if (!inherits(location.info, c("list", "data.frame"))) stop("'location.info' must be a list or a data frame.")
 
-  # KATS comment: The check element names with desired_cols assignment below 
-  # is cut and paste code from what is found in the hidden_functions.R 
-  # check_trial_info() function. This should be made a generic function 
+  # KATS comment: The check element names with desired_cols assignment below
+  # is cut and paste code from what is found in the hidden_functions.R
+  # check_trial_info() function. This should be made a generic function
   # check_element_names() in the file hidden_functions.R.
-    
+
   # Check element names
   desired_cols <- c("location", "latitude", "longitude")
   if (!all(desired_cols %in% names(location.info))) {
@@ -355,7 +357,7 @@ get_soil_data <- function(trial.info, grid.size = 0.01, hwsd.path, verbose = TRU
 
   # Parse guess
   # KATS comment -- This needs more explanation. What is the purpose of these nested apply functions?
-  # Something like: Use the parse_guess function to assign data types to data frame columns 
+  # Something like: Use the parse_guess function to assign data types to data frame columns
   #  (e.g., integer, float, character, logical)
   soil_data_out3 <- soil_data_out2
   soil_data_out3[sapply(X = soil_data_out3, FUN = is.character)] <- lapply(X = soil_data_out3[sapply(X = soil_data_out3, FUN = is.character)],

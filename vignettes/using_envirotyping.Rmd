@@ -16,7 +16,6 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-
 # Other packages for this vignette
 library(dplyr)
 library(tidyr)
@@ -166,8 +165,10 @@ The `define_growth_stages()` function uses inequality expressions to define the 
 ```{r define.growth.stages}
 # Create a list of growth stages delineated by a variable "x"
 barley_stages <- list(
- early_vegetative = "x >= 10 & x <= 30", late_vegetative = "x > 30 & x <= 50",
- flowering = "x > 50 & x <= 70", grain_fill = "x > 70 & x <= 91"
+ early_vegetative = "x >= 10 & x <= 30", 
+ late_vegetative = "x > 30 & x <= 50",
+ flowering = "x > 50 & x <= 70", 
+ grain_fill = "x > 70 & x <= 91"
 )
 
 ```
@@ -184,6 +185,33 @@ trial_crop_stages <- define_growth_stages(
 )
 
 ```
+
+```{r define.growth.stages.alt}
+
+daily_weather2 <- daily_weather1 %>% 
+  mutate(planting_date_yday = lubridate::yday(planting_date), 
+         data = purrr::map2(data, planting_date_yday, ~mutate(.x, dap = yday - .y)))
+
+
+# Create a list of growth stages delineated by a variable "x"
+barley_stages <- list(
+ early_vegetative = "x >= 10 & x <= 30", 
+ late_vegetative = "x > 30 & x <= 50",
+ flowering = "x > 50 & x <= 70", 
+ grain_fill = "x > 70 & x <= 91"
+)
+
+
+trial_crop_stages <- define_growth_stages(
+  env.data = daily_weather2, 
+  growth.stage.delim = "dap", 
+  stages = barley_stages
+)
+
+
+
+```
+
 
 The output of this function again resembles the input (`trial_crop_growth`) or the output of the `get_weather_data()` or `get_soil_data()` functions. Again, the elements of the `data` list have been edited to include another column (`growth_stage`) that adds the discrete growth stages passed in the `stages` argument.
 
