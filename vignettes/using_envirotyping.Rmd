@@ -1,5 +1,5 @@
 ---
-title: "`envirotyping` Workflow"
+title: "Complete envirotyping workflow"
 author: "Jeff Neyhart"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: rmarkdown::html_vignette

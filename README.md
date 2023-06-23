@@ -22,6 +22,12 @@ devtools::install_github("neyhartj/envirotyping")
 
 ## Examples
 
-See the vignette [`envirotyping`
-Workflow](https://github.com/neyhartj/envirotyping/articles/using_envirotyping.html)
-for specific examples.
+The [package
+vignette](https://neyhartj.github.io/envirotyping/articles/using_envirotyping.html)
+demonstrates a complete workflow, including:
+
+- Querying weather and soil data from remote databases
+- Running a crop model
+- Summarizing weather data by growth stages
+- Creating an environmental covariance matrix
+- Using environmental data in genomewide prediction
