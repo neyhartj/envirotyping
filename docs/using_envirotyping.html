@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Jeff Neyhart" />
+
+<meta name="date" content="2023-06-23" />
+
+<title>Complete envirotyping workflow</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Complete envirotyping workflow</h1>
+<h4 class="author">Jeff Neyhart</h4>
+<h4 class="date">June 23, 2023</h4>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>In plant breeding, separating the effect of environment from genetics
+is crucial for more accurately selecting superior individual.
+Traditionally, environment is treated as a nuisance factor; however,
+identifying the specific components of an environment - namely weather,
+climate, or soil - that impact plants would be useful for improving
+selection or predicting crop performance. The <code>envirotyping</code>
+package is meant to simplify the process of gathering this explicit
+environmental data for routine plant breeding analyses.</p>
+<div id="definitions" class="section level2">
+<h2>Definitions</h2>
+<p>Before proceeding, it might be useful to lay out some definitions of
+terms used throughout the workflow.</p>
+<table>
+<colgroup>
+<col width="29%" />
+<col width="70%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>environment</td>
+<td>A specific combination of space and time (e.g. Saint Paul, MN in
+2019); this can also be specific growing conditions (e.g. high nitrogen
+vs. low nitrogen)</td>
+</tr>
+<tr class="even">
+<td>trial</td>
+<td>An experiment conducted in a single environment (may be used
+interchangeably with “environment”).</td>
+</tr>
+<tr class="odd">
+<td>location</td>
+<td>A specific geographic point</td>
+</tr>
+<tr class="even">
+<td>genotype</td>
+<td>A genetically unique individual or line</td>
+</tr>
+<tr class="odd">
+<td>environmental covariable</td>
+<td>A variable the describes a specific condition within an environment;
+this could be, for instance, the soil pH at a location, the average
+temperature during a specific growth stage, etc.)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="this-workflow" class="section level2">
+<h2>This workflow</h2>
+<p>This workflow will demonstrate the use of the package for obtaining
+environmental data that can be used in a quantitative genetic analysis.
+Figure 1 outlines a diagram of this workflow and what functions should
+be used.</p>
+<p>The first thing you need to do is load the package:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(envirotyping)</span></code></pre></div>
+</div>
+<div id="data-assumptions-and-examples" class="section level2">
+<h2>Data assumptions and examples</h2>
+<p>This workflow assumes that you have some specific information on
+environmental metadata, crop phenotypes, and genomic information;
+however, not all of this information is necessary for using functions in
+the <code>envirotyping</code> package. The table below outlines
+different data type and whether they are necessary for this workflow or
+for general use of the package.</p>
+<table>
+<colgroup>
+<col width="17%" />
+<col width="29%" />
+<col width="25%" />
+<col width="27%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Data type</th>
+<th>Description</th>
+<th align="center">Required for general use?</th>
+<th align="center">Required for this workflow?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>environmental metadata</td>
+<td>Data describing a specific environment or trial (e.g. geographic
+coordinates, planting date, etc.)</td>
+<td align="center">X</td>
+<td align="center">X</td>
+</tr>
+<tr class="even">
+<td>phenotypic data</td>
+<td>Measurements of the performance of genotypes in a specific
+environment or environments for one or more traits</td>
+<td align="center"></td>
+<td align="center">X</td>
+</tr>
+<tr class="odd">
+<td>genomic data</td>
+<td>Genomewide marker data for the genotypes</td>
+<td align="center"></td>
+<td align="center">X</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>envirotyping</code> package includes some sample data for
+demonstration in this workflow. These data are available when the
+package is loaded. <a href="https://pages.github.umn.edu/neyha001/envirotyping/reference/barley_ex_data.html">See
+this page</a> for a description of the data.</p>
+</div>
+</div>
+<div id="querying-weather-and-soil-data" class="section level1">
+<h1>Querying weather and soil data</h1>
+<p>The first step of using <code>envirotyping</code> is to obtain
+weather and soil data for the trials or environments of interest.</p>
+<div id="get-daily-weather-data" class="section level2">
+<h2>Get daily weather data</h2>
+<p>Weather data is available as daily measurements from many sources.
+The Daymet database from NASA is a reliable source for high-resolution
+data. The <code>get_weather_data()</code> function queries this database
+using trial metadata (provided here in the <code>trial_info</code>
+object). This object must contain the trial name (“trial”), “year”,
+“latitude”, and “longitude”.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Retrieve daily weather observations in the same years as the trials</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>daily_weather <span class="ot">&lt;-</span> <span class="fu">get_weather_data</span>(<span class="at">trial.info =</span> trial_info)</span></code></pre></div>
+<p>The output of this function is a <code>tibble</code> with all of the
+information from <code>trial_info</code>, but with a new column called
+<code>&quot;data&quot;</code> that is a list containing data frames of daily
+weather observations.</p>
+</div>
+<div id="get-soil-data" class="section level2">
+<h2>Get soil data</h2>
+<p>The <code>get_soil_data()</code> function queries the <a href="http://www.fao.org/soils-portal/soil-survey/soil-maps-and-databases/harmonized-world-soil-database-v12/en/">Harmonized
+World Soil Database (HWSD)</a> to gather information on soil texture (%
+silt, sand, clay), organic matter, pH, bulk density, etc at each trial.
+To use this function, you must provide a path to the
+<code>hwsd.bil</code> file (which should be in a folder with other HWSD
+raster files). These files can be obtained from the link above and by
+navigating to “HWSD Raster” by the “Download” section.</p>
+<p>Once you have a path to <code>hwsd.bil</code> file, you can pass that
+path to the <code>get_soil_data()</code> function:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Path to the HWSD raster folder with hwsd.bil</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>hwsd_path <span class="ot">&lt;-</span> <span class="st">&quot;path/to/hwsd.bil&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Retrieve soil data for each location</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>soil_data <span class="ot">&lt;-</span> <span class="fu">get_soil_data</span>(<span class="at">trial.info =</span> trial_info, <span class="at">hwsd.path =</span> hwsd_path)</span></code></pre></div>
+<p>Just like the <code>get_weather_data()</code> function, the output of
+this function is a <code>tibble</code> with all of the information from
+<code>trial_info</code>, but with a new column called
+<code>&quot;data&quot;</code> that is a list containing data frames of the soil
+data.</p>
+</div>
+<div id="get-historical-weather-data" class="section level2">
+<h2>Get historical weather data</h2>
+<p>If you would like to model the impact of a location using long-term
+historical data, you can use the
+<code>get_historical_weather_data()</code> function to obtain daily
+weather measurements for a range of years at each of many locations:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Distinct set of location info</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>location_info <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">distinct</span>(trial_info, location, latitude, longitude)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co"># Retrieve 5 years of historical daily weather observations</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>historical_daily_weather <span class="ot">&lt;-</span> <span class="fu">get_historical_weather_data</span>(</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="at">location.info =</span> location_info, <span class="at">start.year =</span> <span class="dv">2010</span>, <span class="at">end.year =</span> <span class="dv">2014</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>)</span></code></pre></div>
+<blockquote>
+<p>Note that the Daymet database <a href="https://daymet.ornl.gov/overview">only contains daily weather data
+going back to 1980</a>.</p>
+</blockquote>
+</div>
+<div id="make-edits-to-weather-or-soil-data" class="section level2">
+<h2>Make edits to weather or soil data</h2>
+<p>Sometimes, you might have external data to complement or replace the
+weather data obtained by <code>get_weather_data()</code>. For example,
+say you have obtained precipitation data, but want to add known
+irrigation applications on certain dates in a specific trial. You can
+use the <code>edit_environmental_data()</code> function to append or
+replace specific weather observation using a supplementary data object.
+In the example below, irrigation data is added to the precipitation
+observations (i.e. “rain”) from a single trial:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Modify the trial irrigation data to set irrigated water as &quot;rain&quot;</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>trial_irrigation_data<span class="sc">$</span>rain <span class="ot">&lt;-</span> trial_irrigation_data<span class="sc">$</span>irrigation_mm</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># Edit the trial weather data with this irrigation information</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>daily_weather1 <span class="ot">&lt;-</span> <span class="fu">edit_environmental_data</span>(<span class="at">env.data =</span> daily_weather, <span class="at">suppl.data =</span> trial_irrigation_data,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>                                          <span class="at">operation =</span> <span class="fu">c</span>(<span class="st">&quot;rain&quot;</span> <span class="ot">=</span> <span class="st">&quot;+&quot;</span>))</span></code></pre></div>
+</div>
+</div>
+<div id="reducing-data-dimensionality-by-summarizing-over-crop-growth-stages" class="section level1">
+<h1>Reducing data dimensionality by summarizing over crop growth
+stages</h1>
+<p>Daily weather observations are not very useful for statistical
+modeling, since there are likely many more explanatory variables than
+observations (i.e. a big <em>p</em>, small <em>n</em> problem). Further,
+daily weather may not be particularly relevant for crops planted at
+different dates. One way to reduce the dimensionality of this data and
+incorporate some prior biological is by summarizing environmental data
+according to known or predicted crop growth stages.</p>
+<p>The steps below show how one can use a process-based crop model
+simulator to predict growth stages for summarizing data.</p>
+<div id="running-a-crop-model" class="section level2">
+<h2>Running a crop model</h2>
+<p>The specific timing of crop growth stages may be recorded during the
+course of a trial, but often this information is not available. An
+alternative is to use the daily weather conditions to predict the timing
+of specific growth stages. This might be done using a simple growing
+degree day model or more complex process-based simulators such as <a href="https://www.apsim.info/">APSIM</a> or <a href="https://dssat.net/">DSSAT</a>.</p>
+<p>The <code>envirotyping</code> package includes a function,
+<code>run_apsim_crop_model()</code>, for running APSIM simulations. To
+support this function, the package is also distributed with an example
+<code>.apsimx</code> file for running a barley crop simulation (more
+examples are forthcoming). You may specify your own base crop model file
+using the <code>base.model.path</code> argument. This base model will be
+modified using the planting date information and weather data provided
+in the <code>env.data</code> argument.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Run a crop model for each trial</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>trial_crop_growth <span class="ot">&lt;-</span> <span class="fu">run_apsim_crop_model</span>(<span class="at">env.data =</span> daily_weather1, <span class="at">base.model.path =</span> <span class="st">&quot;barley&quot;</span>)</span></code></pre></div>
+<p>The output of this function is quite similar to the input,
+<code>daily_weather</code>, but the elements of the <code>data</code>
+list have been edited to include the output of the crop growth
+model.</p>
+</div>
+<div id="define-growth-stages" class="section level2">
+<h2>Define growth stages</h2>
+<p>The output of the barley crop model in the example above includes a
+continuous variable called <code>zadok_stage</code>, which defines the
+numeric growth stage according to the Zadoks scale. This information can
+be used to delineate the beginning and ending of discrete growth stages,
+during which environmental data will be summarized.</p>
+<p>The <code>define_growth_stages()</code> function uses inequality
+expressions to define the span of specific growth stages. This requires
+some prior understanding of what numeric crop developmental information
+corresponds to what discrete growth stages. An example for barley is
+provided below:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Create a list of growth stages delineated by a variable &quot;x&quot;</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>barley_stages <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a> <span class="at">early_vegetative =</span> <span class="st">&quot;x &gt;= 10 &amp; x &lt;= 30&quot;</span>, </span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a> <span class="at">late_vegetative =</span> <span class="st">&quot;x &gt; 30 &amp; x &lt;= 50&quot;</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a> <span class="at">flowering =</span> <span class="st">&quot;x &gt; 50 &amp; x &lt;= 70&quot;</span>, </span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a> <span class="at">grain_fill =</span> <span class="st">&quot;x &gt; 70 &amp; x &lt;= 91&quot;</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>)</span></code></pre></div>
+<p>Here, <code>x</code> refers to whatever numeric variable will be used
+in the inequality expressions provided in a list (the
+<code>barley_stages</code> object above). The name of this variable is
+passed using the <code>growth.stage.delim</code> argument in the
+<code>define_growth_stages()</code> function. An example is below:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Use these delineations to mark growth stages from the crop model</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>trial_crop_stages <span class="ot">&lt;-</span> <span class="fu">define_growth_stages</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="at">env.data =</span> trial_crop_growth, </span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="at">growth.stage.delim =</span> <span class="st">&quot;zadok&quot;</span>, </span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="at">stages =</span> barley_stages</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>)</span></code></pre></div>
+<p>The output of this function again resembles the input
+(<code>trial_crop_growth</code>) or the output of the
+<code>get_weather_data()</code> or <code>get_soil_data()</code>
+functions. Again, the elements of the <code>data</code> list have been
+edited to include another column (<code>growth_stage</code>) that adds
+the discrete growth stages passed in the <code>stages</code>
+argument.</p>
+<p>The elements of the list passed in the <code>stages</code> argument
+must be characters that define inequality expressions. Here is what
+happens when those elements cannot be parsed as expressions:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># The early_vegatative element is not an expression</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>stages <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a> <span class="at">early_vegetative =</span> <span class="st">&quot;x 10 &amp; x &lt;= 30&quot;</span>, <span class="at">late_vegetative =</span> <span class="st">&quot;x &gt; 30 &amp; x &lt;= 50&quot;</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a> <span class="at">flowering =</span> <span class="st">&quot;x &gt;  50 &amp; x &lt;= 70&quot;</span>, <span class="at">grain_fill =</span> <span class="st">&quot;x &gt; 70 &amp; x &lt;= 91&quot;</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>)</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co"># Use these delineations to mark growth stages from the crop model</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="fu">define_growth_stages</span>(</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="at">env.data =</span> trial_crop_growth, </span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="at">growth.stage.delim =</span> <span class="st">&quot;zadok&quot;</span>, </span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>  <span class="at">stages =</span> stages</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /></p>
+<p>Additionally, the use of the dummy variable <code>x</code> is
+required. The function will automatically convert this dummy to whatever
+variable is passed in the <code>growth.stage.delim</code> argument. Here
+is what happens when <code>x</code> is not included in the list of
+expressions:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># This list uses the variable name to be passes in growth.stage.delim</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>stages <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a> <span class="at">early_vegetative =</span> <span class="st">&quot;zadok 10 &amp; zadok &lt;= 30&quot;</span>, </span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a> <span class="at">late_vegetative =</span> <span class="st">&quot;zadok &gt; 30 &amp; zadok &lt;= 50&quot;</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a> <span class="at">flowering =</span> <span class="st">&quot;zadok &gt;  50 &amp; zadok &lt;= 70&quot;</span>, </span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a> <span class="at">grain_fill =</span> <span class="st">&quot;zadok &gt; 70 &amp; zadok &lt;= 91&quot;</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>)</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co"># Use these delineations to mark growth stages from the crop model</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="fu">define_growth_stages</span>(</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  <span class="at">env.data =</span> trial_crop_growth, </span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>  <span class="at">growth.stage.delim =</span> <span class="st">&quot;zadok_stage&quot;</span>, </span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>  <span class="at">stages =</span> stages</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /></p>
+</div>
+<div id="summarize-weather-data-according-to-growth-stages" class="section level2">
+<h2>Summarize weather data according to growth stages</h2>
+<p>Once discrete growth stages are assigned, the next step is to
+summarize the daily weather observations within each of those stage. The
+<code>summarize_environmental_data()</code> function provides a simple
+way to calculate these summaries.</p>
+<p>The most important argument to this function is <code>.funs</code>,
+which allows the user to provide variable-specific summary functions.
+For instance, growing degree days are usually expressed as an
+accumulated value (a cumulative sum), while temperature might be
+summarized as an arithmetic average. <code>.funs</code> takes a list of
+formula-based functions; the names of this list are the variables you
+wish to summarize. For example, if you wanted to calculate the
+cumulative rainfall and average maximum temperature during each growth
+stage, the <code>.funs</code> argument would look like this:</p>
+<pre><code>.funs &lt;- list(rain = ~sum, maxt = ~mean)</code></pre>
+<p>Any functions that return a single value can be passed.</p>
+<p>Below is an example of using the
+<code>summarize_environmental_data()</code> on the daily weather
+variable with assigned growth stages. The <code>unite</code> argument,
+when set to <code>TRUE</code>, combines the growth stage and variable
+into a single variable and provides a single-row data frame of
+summarized data. If not switched, the output is a tidy table of growth
+stage, variable, and value.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># A list defining how to summarize each variable</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>summary_funs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">rain =</span> <span class="sc">~</span>sum, <span class="at">radn =</span> <span class="sc">~</span>sum, <span class="at">maxt =</span> <span class="sc">~</span>mean, <span class="at">mint =</span> <span class="sc">~</span>mean, <span class="at">daylength =</span> <span class="sc">~</span>mean)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co"># Summarize environmental data according to the growth stages</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>trial_data_summarized <span class="ot">&lt;-</span> <span class="fu">summarize_environmental_data</span>(</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  <span class="at">env.data =</span> trial_crop_stages,</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  <span class="at">growth.stage.col =</span> <span class="st">&quot;growth_stage&quot;</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  <span class="at">.funs =</span> summary_funs,</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  <span class="at">unite =</span> <span class="cn">TRUE</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>)</span></code></pre></div>
+<p>You will notice in the output of this function that elements of the
+<code>data</code> list contain only a single row - 1 for each trial -
+instead of 365 rows for data from each date.</p>
+</div>
+<div id="repeat-these-procedures-for-historical-weather-data" class="section level2">
+<h2>Repeat these procedures for historical weather data</h2>
+<p>The same steps can be followed for assigning growth stages to
+historical daily weather data and summarizing those variables. Unlike
+the daily weather data collected above, historical weather data might be
+collected absent any trial that is conducted at a location during the
+years covered by the historical data. To run a crop model, we therefore
+need to predict some of the important metadata for a trial that would
+<em>theoretically</em> been conducted at that location in a historical
+year; namely, the planting date must be determined.</p>
+<p>A useful resource for predicting planting dates is the <a href="http://nelson.wisc.edu/sage/data-and-models/crop-calendar-dataset/">Crop
+Calendar Dataset</a>, which includes historical average planting and
+harvest date information for several crop species across the world. A
+convenient CSV file that contains this data can be downloaded from the
+website linked above, or by running the following code:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Download the crop calendar data</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="st">&quot;http://nelson.wisc.edu/sage/data-and-models/crop-calendar-dataset/All_data_with_climate.csv&quot;</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>crop_calendar <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(url)</span></code></pre></div>
+<p>This will read the crop calendar data into your R environment.</p>
+<p>The <code>predict_historical_planting_dates()</code> function will
+use this information along with the historical daily weather data you
+have obtained to predict the planting date of a specific crop. While the
+function relies on historical average planting dates, you can tune the
+function to include heuristics into the planting decision-making.</p>
+<p>For example, the code below will predict planting dates for spring
+barley, but will search for dates that i) have a mean temperature that
+is not more than 2 degrees (C) colder than the average planting date
+temperature; ii) experience a daylength that is not more than 0.5 hours
+less than the average planting date daylength; iii) had a minimum
+temperature above 0 degrees (C), and iv) had a maximum rainfall of 0.5
+mm (i.e. one usually doesn’t plant when it’s raining).</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Predict planting dates</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>historical_daily_weather1 <span class="ot">&lt;-</span> <span class="fu">predict_historical_planting_dates</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a> <span class="at">env.data =</span> historical_daily_weather, </span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a> <span class="at">crop =</span> <span class="st">&quot;barley - spring&quot;</span>,</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a> <span class="at">crop.calendar =</span> crop_calendar,</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a> <span class="at">meant.adj =</span> <span class="sc">-</span><span class="dv">2</span>, <span class="at">daylen.adj =</span> <span class="sc">-</span><span class="fl">0.5</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a> <span class="at">mint.lower =</span> <span class="dv">0</span>, <span class="at">rain.upper =</span> <span class="fl">0.5</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>)</span></code></pre></div>
+<p>The output of this function is a modified version of the
+<code>historical_daily_weather</code> data frame with two new columns: a
+<code>closest_location</code> column that notes the location in the crop
+calendar the provided the average planting date information, and a
+<code>planting_date</code> column with the predicted planting date.</p>
+<p>Once planting dates are known or predicted, the remaining steps are
+similar to those above. First, crop growth is simulated for each
+location and year of historical data:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># Run a crop model for each historical &quot;trial&quot;</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>hist_crop_growth <span class="ot">&lt;-</span> <span class="fu">run_apsim_crop_model</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  <span class="at">env.data =</span> historical_daily_weather1, <span class="at">base.model.path =</span> <span class="st">&quot;barley&quot;</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>)</span></code></pre></div>
+<p>Next, growth stages are defined:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># Define growth stages using the same set of barley stages</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>hist_crop_stages <span class="ot">&lt;-</span> <span class="fu">define_growth_stages</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>  <span class="at">env.data =</span> hist_crop_growth, </span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>  <span class="at">growth.stage.delim =</span> <span class="st">&quot;zadok&quot;</span>, </span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>  <span class="at">stages =</span> barley_stages</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>)</span></code></pre></div>
+<p>Finally, weather data is summarized within each discrete growth
+stage:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># Summarize data using these growth stages</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>hist_data_summarized <span class="ot">&lt;-</span> <span class="fu">summarize_environmental_data</span>(</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>  <span class="at">env.data =</span> hist_crop_stages, </span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>  <span class="at">.funs =</span> summary_funs,</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>  <span class="at">unite =</span> <span class="cn">TRUE</span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+</div>
+<div id="creating-environmental-covariable-matrices" class="section level1">
+<h1>Creating environmental covariable matrices</h1>
+<p>The final step in making the environmental data useful for modeling
+or prediction is to create matrices of environmental covariables. These
+will take the shape of a <span class="math inline">\(n \times p\)</span>
+matrix, where <span class="math inline">\(n\)</span> indicates the
+number of environments (or locations) and <span class="math inline">\(p\)</span> indicates the number of
+covariables.</p>
+<div id="merge-sets-of-environmental-data" class="section level2">
+<h2>Merge sets of environmental data</h2>
+<p>First, while we have summarized weather data, we need to merge this
+with the soil data we already collected (but, up until now, have not
+manipulated). A convenience function,
+<code>merge_environmental_data()</code> allows one to merge different
+environmental datasets together for the same trials.</p>
+<p>Here is an example of merging the summarized daily weather data and
+the soil data.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># Merge the daily weather data (summarized by growth stage) with the soil data</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>daily_weather_soil <span class="ot">&lt;-</span> <span class="fu">merge_environmental_data</span>(trial_data_summarized, soil_data)</span></code></pre></div>
+<p>Note that this function will merge data frames based on any and all
+common columns. So, you could not merge the daily summarized weather
+data and the historical summarized weather data, because they do not
+share trial names:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="co"># This will produce a data frame with zero rows</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="fu">merge_environmental_data</span>(trial_data_summarized, hist_data_summarized)</span></code></pre></div>
+<p>However, you can merge the historical summarized weather data with
+the soil data because they share locations:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co"># Merge the historical weather data (summarized by growth stage) with the soil data</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="co"># This function will merge based on location</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>hist_weather_soil <span class="ot">&lt;-</span> <span class="fu">merge_environmental_data</span>(</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>  hist_data_summarized, </span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(soil_data, location, data)</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="create-an-environmental-covariable-matrix" class="section level2">
+<h2>Create an environmental covariable matrix</h2>
+<p>The output of the <code>merge_environmental_data()</code> function
+are just like its inputs, which include a column called
+<code>data</code> that is a list of data frames. We need to unnest this
+list of data frames to make it useful. The <code>tidyr</code> package
+provides an easy function to do that:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="co"># Load the tidyr package</span></span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="co"># Reshape the data</span></span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>daily_weather_soil1 <span class="ot">&lt;-</span> daily_weather_soil <span class="sc">%&gt;%</span> </span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="at">cols =</span> data) <span class="sc">%&gt;%</span> </span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>  <span class="fu">gather</span>(variable, value, <span class="fu">c</span>(<span class="st">&quot;latitude&quot;</span>, <span class="st">&quot;longitude&quot;</span>, <span class="st">&quot;elevation&quot;</span>, </span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>                            <span class="fu">names</span>(daily_weather_soil<span class="sc">$</span>data[[<span class="dv">1</span>]])))</span></code></pre></div>
+<p>The output of this code is a data frame in tidy long format, where
+each line is the value of a single environmental covariable in a single
+environment or trial (along with all of the relevant metadata for that
+trial). This data frame can be used for other summary functions or for
+however you please, but it can also be passed to another function,
+<code>ec_matrix()</code>, that will calculate the <span class="math inline">\(n \times p\)</span> matrix of environmental
+covariables.</p>
+<p>This function simply requires the names of columns that contain the
+trial names, the names of the environmental covariables, and the value
+of that covariable. The function automatically will run a few basic
+quality control steps, including a test for variation (any covariable
+with no variation is removed) and a test for normality.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="co"># Create a n x p environmental covariable matrix</span></span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>daily_ecmat <span class="ot">&lt;-</span> <span class="fu">ec_matrix</span>(<span class="at">env.data =</span> daily_weather_soil1, <span class="at">env.col =</span> <span class="st">&quot;trial&quot;</span>, </span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>                         <span class="at">var.col =</span> <span class="st">&quot;variable&quot;</span>, <span class="at">val.col =</span> <span class="st">&quot;value&quot;</span>, <span class="at">check.data =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The output of this function is a <code>matrix</code> object of (by
+default) centered and scaled environmental covariable data.</p>
+<p>A similar process can be used for the historical data. However, as
+the historical data is usually meant to better describe the average
+effect of a location over time, you will need to summarize the
+historical environmental covariables across years before creating an
+environmental covariable matrix.</p>
+<p>First, you need to unnest and reshape the historical data just like
+the daily environmental data:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="co"># Reshape the data</span></span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>hist_weather_soil1 <span class="ot">&lt;-</span> hist_weather_soil <span class="sc">%&gt;%</span> </span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="at">cols =</span> data) <span class="sc">%&gt;%</span> </span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a>  <span class="fu">gather</span>(variable, value, <span class="fu">c</span>(<span class="st">&quot;latitude&quot;</span>, <span class="st">&quot;longitude&quot;</span>, <span class="st">&quot;elevation&quot;</span>, </span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a>                            <span class="fu">names</span>(hist_weather_soil<span class="sc">$</span>data[[<span class="dv">1</span>]])))</span></code></pre></div>
+<p>Next, you can use built-in R functions for summarizing the historical
+data across years. Suppose from this historical data that spans
+2010-2014, you want to summarize across the years 2012-2014. You can use
+functions like <code>aggregate()</code> to summarize the value of each
+environmental covariable across several years</p>
+<p>Here is an example:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="co"># Calculate the average value of each covariable in each location over a few years</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>hist_weather_soil_aggregated <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(value <span class="sc">~</span> variable <span class="sc">+</span> location, <span class="at">data =</span> hist_weather_soil1, </span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>                                          <span class="at">FUN =</span> mean, <span class="at">subset =</span> year <span class="sc">%in%</span> <span class="dv">2012</span><span class="sc">:</span><span class="dv">2014</span>)</span></code></pre></div>
+<p>The <code>ec_matrix()</code> function can then be used to produce the
+environmental covariable matrix:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="co"># Create a n x p environmental covariable matrix</span></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>hist_ecmat <span class="ot">&lt;-</span> <span class="fu">ec_matrix</span>(<span class="at">env.data =</span> hist_weather_soil_aggregated, <span class="at">env.col =</span> <span class="st">&quot;location&quot;</span>, </span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>                        <span class="at">var.col =</span> <span class="st">&quot;variable&quot;</span>, <span class="at">val.col =</span> <span class="st">&quot;value&quot;</span>, <span class="at">check.data =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+</div>
+<div id="case-study-1-using-environmental-data-in-genomic-prediction" class="section level1">
+<h1>Case study 1: using environmental data in genomic prediction</h1>
+<p>This case study will examine a example of using the environmental
+covariable data gathered above. In this example, we will use the
+environmental covariable data in a unified prediction model that
+includes genomic information.</p>
+<p>We will demonstrate using a Genomic-Best Linear Unbiased Prediction
+(GBLUP) mixed-effect model:</p>
+<p><span class="math display">\[
+y_{ij} = \mu + g_i + t_i + (gt)_{ij} + \epsilon_{ij},
+\]</span></p>
+<p>where <span class="math inline">\(y_{ij}\)</span> is the mean of the
+<em>i</em>th genotype in the <em>j</em>th environment, <span class="math inline">\(\mu\)</span> is the grand mean, <span class="math inline">\(g_i\)</span> is the random effect of the
+<em>i</em>th genotype, <span class="math inline">\(t_i\)</span> is the
+random effect of the <em>j</em>th environment, <span class="math inline">\((gt)_{ij}\)</span> is the random effect of the
+<em>ij</em>th genotype-environment combination (interaction) and <span class="math inline">\(\epsilon_{ij}\)</span> is error.</p>
+<p>The genomic and environmental covariable data will be integrated in
+covariance matrices that model the random effect <span class="math inline">\(g_i\)</span>, <span class="math inline">\(t_i\)</span>, and <span class="math inline">\((gt)_{ij}\)</span>. In this case:</p>
+<ul>
+<li><span class="math inline">\(g_i \sim N(0,
+\mathbf{G}\sigma^2_g)\)</span></li>
+<li><span class="math inline">\(t_i \sim N(0,
+\mathbf{E}\sigma^2_g)\)</span></li>
+<li><span class="math inline">\((gt)_{ij} \sim N(0, \mathbf{(G \otimes
+E})\sigma^2_g)\)</span></li>
+</ul>
+<p><span class="math inline">\(\mathbf{G}\)</span> is a genomic
+relationship matrix, <span class="math inline">\(\mathbf{E}\)</span> is
+an environmental “relationship” matrices calculated using environmental
+covariables, and <span class="math inline">\(\mathbf{(G \otimes
+E})\)</span> denotes the Kronecker product between those two
+matrices.</p>
+<div id="creating-the-environmental-relationship-matrix" class="section level2">
+<h2>Creating the environmental “relationship” matrix</h2>
+<p>The environmental “relationship” matrix (or, more accurately, the
+covariance matrix) mentioned above is created directly from
+environmental covariables. This matrix shares some similarity with the
+genomic relationship matrix: both approximate the covariance between
+their respective factors (environments or genotypes); however, while
+there is theory supporting the use of genomic markers to approximate
+genotypic covariance as a function of degree of relationship
+(i.e. coefficients of coancestry), no such theory exists for
+environments. Nevertheless, this does not stop us from using similar
+formulas to calculate the environmental “relationship” matrix.</p>
+<p>The sections below detail different cases in constructing
+environmental “relationship” matrices.</p>
+<div id="using-all-available-environmental-covariables" class="section level3">
+<h3>Using all available environmental covariables</h3>
+<p>One option for calculating the “relationship” matrix is to use all
+available environmental covariables. This method relies on the idea that
+more measurements of explicit environmental conditions (i.e. weather,
+soil, etc.) will more closely capture the total unique environmental
+conditions experienced by the crop, and it is this entirety that
+determines eventual phenotypic outcomes. This is analogous to using all
+available genomic markers to model the relationship between
+genotypes.</p>
+<p>Constructing the environmental “relationship” matrix can be
+accomplished by using the <code>ec_relmat()</code> function. If you want
+to use all possible environmental covariables, simply pass the
+covariable matrix (i.e. from the <code>ec_matrix()</code> function) to
+this function:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="co"># Construct a relationship matrix for environments</span></span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>env_all_relmat <span class="ot">&lt;-</span> <span class="fu">ec_relmat</span>(<span class="at">ec.matrix =</span> daily_ecmat)</span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a><span class="co"># Construct a relationship matrix for locations using historical data:</span></span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>loc_all_relmat <span class="ot">&lt;-</span> <span class="fu">ec_relmat</span>(<span class="at">ec.matrix =</span> hist_ecmat)</span></code></pre></div>
+<p>This function includes other options for weighing different
+covariables or using different formulas for calculating the relationship
+matrix. See the help page for this function for more information.</p>
+</div>
+<div id="selecting-important-environmental-covariables" class="section level3">
+<h3>Selecting important environmental covariables</h3>
+<p>A different option for calculating the “relationship” matrix is to
+use known phenotypic observations and a variable selection or feature
+identification method to determine the most important environmental
+covariables. This method relies on the idea that certain environmental
+conditions impact crop phenotypic outcomes, and those are the most
+useful for prediction.</p>
+<p>This package includes a function,
+<code>ec_variable_selection()</code>, that performs variable selection
+based on linear mixed models and stepwise addition of variables. The
+function will continue to add variables to a model so long as the
+performance of the model (measured using cross-validation) continues to
+improve. This method of stepwise variable selection aims to minimize
+overfitting and select variables that will be most useful for
+prediction.</p>
+<p>The function requires phenotype data in order to proceed. This must
+be observations for a single trait measured on (ideally) many genotypes
+in (ideally) many environments (the same environments for which you
+should now have explicit covariables). The default variable search
+method for this function is the linear mixed model, which takes the
+form:</p>
+<p><span class="math display">\[
+y_{ij} = \mu + g_i + \sum^P_{p=1}\beta_p x_{jp} + \epsilon_{ij},
+\]</span> where <span class="math inline">\(y_{ij}\)</span>, <span class="math inline">\(\mu\)</span>, and <span class="math inline">\(g_i\)</span> are the same as defined above, except
+no relationship matrix is used to model the covariance between
+genotypes; <span class="math inline">\(\beta_p\)</span> is the
+regression coefficient of the <em>p</em>th covariable, and <span class="math inline">\(x_{jp}\)</span> is the value of the <em>p</em>th
+environmental covariable in the <em>j</em>th environment.</p>
+<p>Here is an example of using the <code>ec_variable_selection()</code>
+function to determine important environmental covariables:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="co"># Use stepwise regression to determine the important set of environmental</span></span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a><span class="co"># covariables</span></span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a>variable_selection_out <span class="ot">&lt;-</span> <span class="fu">ec_variable_selection</span>(</span>
+<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a> <span class="at">pheno.data =</span> pheno_data_train, </span>
+<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a> <span class="at">env.data =</span> daily_weather_soil1, </span>
+<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a> <span class="at">env.col =</span> <span class="st">&quot;trial&quot;</span>,</span>
+<span id="cb27-7"><a href="#cb27-7" tabindex="-1"></a> <span class="at">gen.col =</span> <span class="st">&quot;line_name&quot;</span>, </span>
+<span id="cb27-8"><a href="#cb27-8" tabindex="-1"></a> <span class="at">y.col =</span> <span class="st">&quot;value&quot;</span>, </span>
+<span id="cb27-9"><a href="#cb27-9" tabindex="-1"></a> <span class="at">var.col =</span> <span class="st">&quot;variable&quot;</span>,</span>
+<span id="cb27-10"><a href="#cb27-10" tabindex="-1"></a> <span class="at">val.col =</span> <span class="st">&quot;value&quot;</span></span>
+<span id="cb27-11"><a href="#cb27-11" tabindex="-1"></a>)</span></code></pre></div>
+<p>This function returns a list containing the results of the variable
+selection and the names of the selected covariables. See the help file
+for this function for more information about its output.</p>
+<p>You can save a tidy table of the selected environmental covariates by
+using the <code>save_ec_selection_table()</code> function. If you
+provide a file path using the <code>file</code> argument, the tidy table
+will be saved as a .csv file. Otherwise, the function returns the tidy
+table as a data frame.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>ec_table <span class="ot">&lt;-</span> <span class="fu">save_ec_selection_table</span>(<span class="at">x =</span> variable_selection_out)</span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>ec_table</span></code></pre></div>
+<p>In the above example, the tidy table indicates whether the covariate
+should be used to model the main environmental effect or the GxE
+interaction effect.</p>
+<p>You can then use the names of the selected covariables to subset the
+full environmental covariable matrix and calculate a “relationship”
+matrix based only on those covariables:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="co"># Subset the environmental covariable matrix based on the results of the </span></span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a><span class="co"># variable selection operation</span></span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a><span class="co"># First select the main effect variables</span></span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a>daily_ecmat_main <span class="ot">&lt;-</span> <span class="fu">subset.matrix</span>(<span class="at">x =</span> daily_ecmat, <span class="at">select =</span> variable_selection_out<span class="sc">$</span>variableEffects<span class="sc">$</span>main_effect)</span>
+<span id="cb29-5"><a href="#cb29-5" tabindex="-1"></a><span class="co"># Next interaction variables</span></span>
+<span id="cb29-6"><a href="#cb29-6" tabindex="-1"></a>daily_ecmat_interaction <span class="ot">&lt;-</span> <span class="fu">subset.matrix</span>(<span class="at">x =</span> daily_ecmat, <span class="at">select =</span> variable_selection_out<span class="sc">$</span>variableEffects<span class="sc">$</span>interaction_effect)</span>
+<span id="cb29-7"><a href="#cb29-7" tabindex="-1"></a></span>
+<span id="cb29-8"><a href="#cb29-8" tabindex="-1"></a><span class="co"># Create the relationship matrix</span></span>
+<span id="cb29-9"><a href="#cb29-9" tabindex="-1"></a>env_sel_relmat_main <span class="ot">&lt;-</span> <span class="fu">ec_relmat</span>(<span class="at">ec.matrix =</span> daily_ecmat_main)</span>
+<span id="cb29-10"><a href="#cb29-10" tabindex="-1"></a>env_sel_relmat_interaction <span class="ot">&lt;-</span> <span class="fu">ec_relmat</span>(<span class="at">ec.matrix =</span> daily_ecmat_interaction)</span></code></pre></div>
+</div>
+<div id="model-historical-environmental-covariables" class="section level3">
+<h3>Model historical environmental covariables</h3>
+<p>A similar variable selection approach can be used to determine the
+important historical environmental covariables; however, there is an
+additional variable of time that needs to be considered. Historical
+environmental data is collected on a per-year basis; this data, intended
+to model the impact of location, needs to be summarized over years, but
+the ideal time frame (i.e. number of years) over which to summarize may
+not be known.</p>
+<p>You can measure this empirically by performing variable selection
+over different time frames and determining that which maximizes model
+performance. This capability is provided by the
+<code>ec_variable_selection_slide()</code> function, which extends the
+<code>ec_variable_selection()</code> function over different time
+frames.</p>
+<p>To use this function, you first need to create a list of years that
+form the time frames of interest. For example, below we create a list of
+accumulating years and a list of equal number of years across a sliding
+window:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="co"># Create a list of years that accumulate from latest to earliest</span></span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a>timeframe_list <span class="ot">&lt;-</span> <span class="fu">Reduce</span>(c, <span class="fu">sort</span>(<span class="fu">unique</span>(hist_weather_soil1<span class="sc">$</span>year)), <span class="at">accumulate =</span> <span class="cn">TRUE</span>, <span class="at">right =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a><span class="co"># Create a list of years forming a sliding window of two years</span></span>
+<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a><span class="co"># Use the slider package to create this</span></span>
+<span id="cb30-6"><a href="#cb30-6" tabindex="-1"></a>window_list <span class="ot">&lt;-</span> slider<span class="sc">::</span><span class="fu">slide</span>(<span class="at">.x =</span> <span class="fu">sort</span>(<span class="fu">unique</span>(hist_weather_soil1<span class="sc">$</span>year)), <span class="at">.f =</span> c,</span>
+<span id="cb30-7"><a href="#cb30-7" tabindex="-1"></a>                             <span class="at">.after =</span> <span class="dv">1</span>, <span class="at">.step =</span> <span class="dv">1</span>, <span class="at">.complete =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb30-8"><a href="#cb30-8" tabindex="-1"></a><span class="co"># Remove NULL elements</span></span>
+<span id="cb30-9"><a href="#cb30-9" tabindex="-1"></a>window_list <span class="ot">&lt;-</span> <span class="fu">subset</span>(window_list, <span class="sc">!</span><span class="fu">sapply</span>(window_list, is.null))</span></code></pre></div>
+<p>You will notice that the <code>timeframe_list</code> object contains
+elements of different lengths (i.e. increasing the number of years over
+which data will be summarized), while the <code>window_list</code>
+object contains elements of equal length.</p>
+<p>The <code>ec_variable_selection_slide()</code> function can then be
+used to identify the best time frame.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="co"># Add location information to the pheno_data_train object</span></span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a>pheno_data_train1 <span class="ot">&lt;-</span> <span class="fu">merge</span>(pheno_data_train[<span class="sc">-</span><span class="dv">2</span>], trial_info[<span class="fu">c</span>(<span class="st">&quot;trial&quot;</span>, <span class="st">&quot;location&quot;</span>)])</span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a><span class="co"># Variable selection using the list of time frames</span></span>
+<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a>timeframe_ec_sel <span class="ot">&lt;-</span> <span class="fu">ec_variable_selection_slide</span>(</span>
+<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a>  <span class="at">pheno.data =</span> pheno_data_train1, <span class="at">env.data =</span> hist_weather_soil1, </span>
+<span id="cb31-7"><a href="#cb31-7" tabindex="-1"></a>  <span class="at">env.col =</span> <span class="st">&quot;location&quot;</span>, <span class="at">gen.col =</span> <span class="st">&quot;line_name&quot;</span>, <span class="at">y.col =</span> <span class="st">&quot;value&quot;</span>, </span>
+<span id="cb31-8"><a href="#cb31-8" tabindex="-1"></a>  <span class="at">var.col =</span> <span class="st">&quot;variable&quot;</span>, <span class="at">val.col =</span> <span class="st">&quot;value&quot;</span>, <span class="at">time.col =</span> <span class="st">&quot;year&quot;</span>, </span>
+<span id="cb31-9"><a href="#cb31-9" tabindex="-1"></a>  <span class="at">time.list =</span> timeframe_list</span>
+<span id="cb31-10"><a href="#cb31-10" tabindex="-1"></a>)</span>
+<span id="cb31-11"><a href="#cb31-11" tabindex="-1"></a></span>
+<span id="cb31-12"><a href="#cb31-12" tabindex="-1"></a><span class="co"># Variable selection using the list of sliding windows</span></span>
+<span id="cb31-13"><a href="#cb31-13" tabindex="-1"></a>window_ec_sel <span class="ot">&lt;-</span> <span class="fu">ec_variable_selection_slide</span>(</span>
+<span id="cb31-14"><a href="#cb31-14" tabindex="-1"></a>  <span class="at">pheno.data =</span> pheno_data_train1, <span class="at">env.data =</span> hist_weather_soil1, </span>
+<span id="cb31-15"><a href="#cb31-15" tabindex="-1"></a>  <span class="at">env.col =</span> <span class="st">&quot;location&quot;</span>, <span class="at">gen.col =</span> <span class="st">&quot;line_name&quot;</span>, <span class="at">y.col =</span> <span class="st">&quot;value&quot;</span>, </span>
+<span id="cb31-16"><a href="#cb31-16" tabindex="-1"></a>  <span class="at">var.col =</span> <span class="st">&quot;variable&quot;</span>, <span class="at">val.col =</span> <span class="st">&quot;value&quot;</span>, <span class="at">time.col =</span> <span class="st">&quot;year&quot;</span>, </span>
+<span id="cb31-17"><a href="#cb31-17" tabindex="-1"></a>  <span class="at">time.list =</span> window_list</span>
+<span id="cb31-18"><a href="#cb31-18" tabindex="-1"></a>)</span></code></pre></div>
+<p>The results of the time frame selection based on accumulating years
+(i.e. <code>timeframe_ec_sel$timeframeFinalCVResults</code>) indicates
+that summarizing historical data between 2013 and 2014 was best; based
+on a sliding window
+(i.e. <code>window_ec_sel$timeframeFinalCVResults</code>), summarizing
+data between 2011 and 2012 was best. Both results are quite similar
+(based on root mean squared error), though the sliding window approach
+results in a slightly lower RMSE.</p>
+<p>The <code>ec_variable_selection_slide()</code> output includes a
+environmental covariable matrix with values of all covariables
+summarized across the optimal time frame. You can then subset this
+matrix for the covariables that were determined to be most important by
+the variable selection procedure:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="co"># Extract the historical environmental covariable matrix</span></span>
+<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a>hist_ecmat1 <span class="ot">&lt;-</span> window_ec_sel<span class="sc">$</span>ecMatrixSelected</span>
+<span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a><span class="co"># Subset for the important covariables</span></span>
+<span id="cb32-4"><a href="#cb32-4" tabindex="-1"></a>hist_ecmat1 <span class="ot">&lt;-</span> <span class="fu">subset.matrix</span>(<span class="at">x =</span> hist_ecmat1, <span class="at">select =</span> <span class="fu">row.names</span>(window_ec_sel<span class="sc">$</span>variableSelectionResults<span class="sc">$</span>optVariables))</span>
+<span id="cb32-5"><a href="#cb32-5" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" tabindex="-1"></a><span class="co"># Construct a relationship matrix</span></span>
+<span id="cb32-7"><a href="#cb32-7" tabindex="-1"></a>hist_sel_relmat <span class="ot">&lt;-</span> <span class="fu">ec_relmat</span>(<span class="at">ec.matrix =</span> hist_ecmat1)</span></code></pre></div>
+</div>
+</div>
+<div id="using-environmental-relationship-matrices-for-genomic-prediction" class="section level2">
+<h2>Using environmental “relationship” matrices for genomic
+prediction</h2>
+<p>Once the environmental “relationship” matrices are constructed, they
+can be used in genomic prediction models in the same way that markers
+are used: model the covariance between (in this case) environments or
+predict the value of unobserved environments. Below are examples of
+fitting the model mentioned above using genomic data, environmental
+data, and their interaction to predict the phenotypes of previously
+unobserved genotypes in previously unobserved environments.</p>
+<p>In both cases, marker data is used to model the covariance between
+genotypes via a relationship matrix. This matrix is already provided in
+the package as the data object <code>Gmat</code>.</p>
+<div id="predictions-in-previously-unobserved-environments" class="section level3">
+<h3>Predictions in previously unobserved environments</h3>
+<p>To make predictions in previously unobserved environments, we use the
+environmental “relationship” matrix created from the in-season weather
+and soil data (i.e. <code>env_sel_relmat</code> in this example). We use
+the <code>mmer()</code> function from the <code>sommer</code> package to
+fit the model and generate predictions:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="co"># Rename the relationship matrices for consistency</span></span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>Emat <span class="ot">&lt;-</span> env_sel_relmat_main</span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a>Gmat <span class="ot">&lt;-</span> Gmat</span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a><span class="co"># The kronecker product models the interaction between the two matrices</span></span>
+<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>GEmat <span class="ot">&lt;-</span> <span class="fu">kronecker</span>(<span class="at">X =</span> Gmat, <span class="at">Y =</span> env_sel_relmat_interaction, <span class="at">make.dimnames =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="#cb33-7" tabindex="-1"></a><span class="co"># Subset phenotype data based on the genotypes that are in the Gmat</span></span>
+<span id="cb33-8"><a href="#cb33-8" tabindex="-1"></a>pheno_data_train2 <span class="ot">&lt;-</span> <span class="fu">subset</span>(pheno_data_train1, line_name <span class="sc">%in%</span> <span class="fu">row.names</span>(Gmat))</span>
+<span id="cb33-9"><a href="#cb33-9" tabindex="-1"></a><span class="co"># Add factors for genotypes and environments</span></span>
+<span id="cb33-10"><a href="#cb33-10" tabindex="-1"></a>pheno_data_train2<span class="sc">$</span>line_name <span class="ot">&lt;-</span> <span class="fu">factor</span>(pheno_data_train2<span class="sc">$</span>line_name, <span class="at">levels =</span> <span class="fu">row.names</span>(Gmat))</span>
+<span id="cb33-11"><a href="#cb33-11" tabindex="-1"></a>pheno_data_train2<span class="sc">$</span>trial <span class="ot">&lt;-</span> <span class="fu">factor</span>(pheno_data_train2<span class="sc">$</span>trial, <span class="at">levels =</span> <span class="fu">row.names</span>(Emat))</span>
+<span id="cb33-12"><a href="#cb33-12" tabindex="-1"></a><span class="co"># Add a factor for interactions</span></span>
+<span id="cb33-13"><a href="#cb33-13" tabindex="-1"></a>pheno_data_train2<span class="sc">$</span>gxe <span class="ot">&lt;-</span> <span class="fu">interaction</span>(pheno_data_train2<span class="sc">$</span>line_name, pheno_data_train2<span class="sc">$</span>trial, <span class="at">sep =</span> <span class="st">&quot;:&quot;</span>)</span>
+<span id="cb33-14"><a href="#cb33-14" tabindex="-1"></a></span>
+<span id="cb33-15"><a href="#cb33-15" tabindex="-1"></a><span class="co"># Train the model using sommer</span></span>
+<span id="cb33-16"><a href="#cb33-16" tabindex="-1"></a><span class="fu">library</span>(sommer)</span>
+<span id="cb33-17"><a href="#cb33-17" tabindex="-1"></a>model_train <span class="ot">&lt;-</span> <span class="fu">mmer</span>(</span>
+<span id="cb33-18"><a href="#cb33-18" tabindex="-1"></a>  <span class="at">fixed =</span> value <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb33-19"><a href="#cb33-19" tabindex="-1"></a>  <span class="at">random =</span> <span class="sc">~</span> <span class="fu">vs</span>(line_name, <span class="at">Gu =</span> Gmat) <span class="sc">+</span> <span class="fu">vs</span>(trial, <span class="at">Gu =</span> Emat) <span class="sc">+</span> <span class="fu">vs</span>(gxe, <span class="at">Gu =</span> GEmat),</span>
+<span id="cb33-20"><a href="#cb33-20" tabindex="-1"></a>  <span class="at">data =</span> pheno_data_train2,</span>
+<span id="cb33-21"><a href="#cb33-21" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb33-22"><a href="#cb33-22" tabindex="-1"></a>)</span></code></pre></div>
+<p>After the model is fit, use a separate data frame of targets to
+generate the predictions. Below we use the data object
+<code>pheno_data_test</code> to validate predictions.</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a><span class="co"># Add the same levels to factors in pheno_data_target</span></span>
+<span id="cb34-2"><a href="#cb34-2" tabindex="-1"></a>pheno_data_test1 <span class="ot">&lt;-</span> <span class="fu">subset</span>(pheno_data_test, line_name <span class="sc">%in%</span> <span class="fu">row.names</span>(Gmat))</span>
+<span id="cb34-3"><a href="#cb34-3" tabindex="-1"></a>pheno_data_test1<span class="sc">$</span>line_name <span class="ot">&lt;-</span> <span class="fu">factor</span>(pheno_data_test1<span class="sc">$</span>line_name, <span class="at">levels =</span> <span class="fu">levels</span>(pheno_data_train2<span class="sc">$</span>line_name))</span>
+<span id="cb34-4"><a href="#cb34-4" tabindex="-1"></a>pheno_data_test1<span class="sc">$</span>trial <span class="ot">&lt;-</span> <span class="fu">factor</span>(pheno_data_test1<span class="sc">$</span>trial, <span class="at">levels =</span> <span class="fu">levels</span>(pheno_data_train2<span class="sc">$</span>trial))</span>
+<span id="cb34-5"><a href="#cb34-5" tabindex="-1"></a><span class="co"># Add a factor for interactions</span></span>
+<span id="cb34-6"><a href="#cb34-6" tabindex="-1"></a>pheno_data_test1<span class="sc">$</span>gxe <span class="ot">&lt;-</span> <span class="fu">interaction</span>(pheno_data_test1<span class="sc">$</span>line_name, pheno_data_test1<span class="sc">$</span>trial, <span class="at">sep =</span> <span class="st">&quot;:&quot;</span>)</span>
+<span id="cb34-7"><a href="#cb34-7" tabindex="-1"></a></span>
+<span id="cb34-8"><a href="#cb34-8" tabindex="-1"></a></span>
+<span id="cb34-9"><a href="#cb34-9" tabindex="-1"></a><span class="do">## Retrieve the predicted values</span></span>
+<span id="cb34-10"><a href="#cb34-10" tabindex="-1"></a><span class="co"># Grand mean</span></span>
+<span id="cb34-11"><a href="#cb34-11" tabindex="-1"></a>mu <span class="ot">&lt;-</span> model_train<span class="sc">$</span>Beta<span class="sc">$</span>Estimate</span>
+<span id="cb34-12"><a href="#cb34-12" tabindex="-1"></a></span>
+<span id="cb34-13"><a href="#cb34-13" tabindex="-1"></a><span class="co"># Genotypes</span></span>
+<span id="cb34-14"><a href="#cb34-14" tabindex="-1"></a>Z_genotypes <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> line_name, pheno_data_test1)</span>
+<span id="cb34-15"><a href="#cb34-15" tabindex="-1"></a>u_genotypes <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(model_train<span class="sc">$</span>U<span class="sc">$</span><span class="st">`</span><span class="at">u:line_name</span><span class="st">`</span><span class="sc">$</span>value)</span>
+<span id="cb34-16"><a href="#cb34-16" tabindex="-1"></a><span class="co"># Environments</span></span>
+<span id="cb34-17"><a href="#cb34-17" tabindex="-1"></a>Z_environments <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> trial, pheno_data_test1)</span>
+<span id="cb34-18"><a href="#cb34-18" tabindex="-1"></a>u_environments <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(model_train<span class="sc">$</span>U<span class="sc">$</span><span class="st">`</span><span class="at">u:trial</span><span class="st">`</span><span class="sc">$</span>value)</span>
+<span id="cb34-19"><a href="#cb34-19" tabindex="-1"></a><span class="co"># GxE</span></span>
+<span id="cb34-20"><a href="#cb34-20" tabindex="-1"></a>Z_gxe <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> gxe, pheno_data_test1)</span>
+<span id="cb34-21"><a href="#cb34-21" tabindex="-1"></a>u_gxe <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(model_train<span class="sc">$</span>U<span class="sc">$</span><span class="st">`</span><span class="at">u:gxe</span><span class="st">`</span><span class="sc">$</span>value)</span>
+<span id="cb34-22"><a href="#cb34-22" tabindex="-1"></a></span>
+<span id="cb34-23"><a href="#cb34-23" tabindex="-1"></a><span class="co"># Generate predictions</span></span>
+<span id="cb34-24"><a href="#cb34-24" tabindex="-1"></a>pred_vals <span class="ot">&lt;-</span> mu <span class="sc">+</span> (Z_genotypes <span class="sc">%*%</span> u_genotypes) <span class="sc">+</span> (Z_environments <span class="sc">%*%</span> u_environments) <span class="sc">+</span> (Z_gxe <span class="sc">%*%</span> u_gxe)</span>
+<span id="cb34-25"><a href="#cb34-25" tabindex="-1"></a></span>
+<span id="cb34-26"><a href="#cb34-26" tabindex="-1"></a><span class="co"># Add the predicted values to the data.frame</span></span>
+<span id="cb34-27"><a href="#cb34-27" tabindex="-1"></a>pheno_data_test1<span class="sc">$</span>predValues <span class="ot">&lt;-</span> pred_vals[,<span class="dv">1</span>]</span>
+<span id="cb34-28"><a href="#cb34-28" tabindex="-1"></a></span>
+<span id="cb34-29"><a href="#cb34-29" tabindex="-1"></a><span class="co"># Measure the model performance by calculating the root mean squared error</span></span>
+<span id="cb34-30"><a href="#cb34-30" tabindex="-1"></a><span class="co"># and correlation between predicted and observed phenotypes</span></span>
+<span id="cb34-31"><a href="#cb34-31" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb34-32"><a href="#cb34-32" tabindex="-1"></a>pheno_data_test1 <span class="sc">%&gt;%</span></span>
+<span id="cb34-33"><a href="#cb34-33" tabindex="-1"></a>  <span class="fu">group_by</span>(trial) <span class="sc">%&gt;%</span></span>
+<span id="cb34-34"><a href="#cb34-34" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">accuracy =</span> <span class="fu">cor</span>(value, predValues),</span>
+<span id="cb34-35"><a href="#cb34-35" tabindex="-1"></a>            <span class="at">RMSE =</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((value <span class="sc">-</span> predValues)<span class="sc">^</span><span class="dv">2</span>)))</span></code></pre></div>
+<p>You should obtain the following measures of prediction accuracy
+(i.e., the correlation) and root mean squared error:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">trial</th>
+<th align="center">accuracy</th>
+<th align="center">RMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2015_S2C1F4_BZ15</td>
+<td align="center">0.121</td>
+<td align="center">2828</td>
+</tr>
+<tr class="even">
+<td align="left">S2_MET_CPE16</td>
+<td align="center">0.325</td>
+<td align="center">397.1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
