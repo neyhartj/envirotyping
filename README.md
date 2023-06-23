@@ -6,9 +6,10 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The `envirotyping` package includes useful functions for gathering and
-manipulating environmental data (weather, climate, soil data, etc.) for
-use in quantitative genetic or plant breeding modeling and predictions.
+The `envirotyping` package is meant to provide useful functions for
+gathering and manipulating environmental data (weather, climate, soil
+data, etc.) for use in quantitative genetic or plant breeding modeling
+and predictions.
 
 ## Installation
 
