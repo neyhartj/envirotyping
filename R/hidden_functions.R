@@ -150,7 +150,7 @@ is_environmental_data <- function(x) attr(x, "data.col") %in% c("historical.weat
 
 #' @describeIn check_trial_info
 #'
-#' @importFrom APSIM prepareMet writeMetFile
+#' @importFrom apsimx as_apsim_met write_apsim_met
 #'
 create_MET <- function(env.data, dir = ".") {
 
@@ -191,8 +191,11 @@ create_MET <- function(env.data, dir = ".") {
     trial_data_tosave1 <- trial_data_tosave[c("maxt", "mint", "radn", "rain", "year", "day")]
 
     ## Prepare a met and then export it
-    invisible(capture.output(met_to_save <- prepareMet(data = trial_data_tosave1, lat = lonlat[2], lon = lonlat[1], units = met_units)))
-    writeMetFile(fileName = filename, met = met_to_save)
+    met_to_save <- as_apsim_met(x = trial_data_tosave1, filename = basename(filename), site = trial_name,
+                                latitude = lonlat[2], longitude = lonlat[1],
+                                colnames = names(trial_data_tosave1), units = met_units)
+
+    write_apsim_met(met = met_to_save, wrt.dir = dir, filename = filename)
 
   } # Close loop
 

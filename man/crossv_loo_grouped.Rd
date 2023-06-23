@@ -35,8 +35,8 @@ Exported from the \href{https://github.com/neyhartj/neyhart}{neyhart} package.
 }
 \section{Functions}{
 \itemize{
-\item \code{crossv_mc_grouped}: 
+\item \code{crossv_mc_grouped()}: 
 
-\item \code{rapid_crossv}: 
+\item \code{rapid_crossv()}: 
+
 }}
-

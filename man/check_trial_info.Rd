@@ -32,19 +32,19 @@ Hidden functions generally not to be directly called by the user
 }
 \section{Functions}{
 \itemize{
-\item \code{read_apsimx_report}: 
+\item \code{read_apsimx_report()}: 
 
-\item \code{get_hwsd2}: 
+\item \code{get_hwsd2()}: 
 
-\item \code{impute}: 
+\item \code{impute()}: 
 
-\item \code{cv}: 
+\item \code{cv()}: 
 
-\item \code{fct_contr_sum}: 
+\item \code{fct_contr_sum()}: 
 
-\item \code{is_environmental_data}: Checks if an object contains weather or soil data from the functions \code{\link{get_weather_data}},
+\item \code{is_environmental_data()}: Checks if an object contains weather or soil data from the functions \code{\link{get_weather_data}},
 \code{\link{get_historical_weather_data}}, or \code{\link{get_soil_data}}.
 
-\item \code{create_MET}: 
-}}
+\item \code{create_MET()}: 
 
+}}

@@ -4,9 +4,6 @@
 \name{envirotyping}
 \alias{envirotyping}
 \title{envirotyping: A package for obtaining useful environmental covariables for modeling in quantitative genetics and genomics}
-\description{
-
-}
 \section{Functions}{
 
 The foo functions ...

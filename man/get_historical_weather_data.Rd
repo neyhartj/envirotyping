@@ -28,9 +28,6 @@ See \emph{Details} for more information.}
 \description{
 Queries long-term weather data from publicly available datasets based on geographical coordinates.
 }
-\details{
-
-}
 \examples{
 \dontrun{
 # Find distinct location info

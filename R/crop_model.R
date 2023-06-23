@@ -229,7 +229,7 @@ run_apsim_crop_model <- function(env.data, wd = ".", base.model.path, exe.path, 
     # If this does not exist, error out
     if (!file.exists(package_path)) {
       stop("The file specified in 'base.model.path' could not be found.
-           \nThus must be either a) a path to a .apsimx file or b) one of the following base model examples distributed in this package: ",
+           \nThis must be either a) a path to a .apsimx file or b) one of the following base model examples distributed in this package: ",
            paste0(gsub(pattern = ".apsimx", replacement = "",
                        x = list.files(path = system.file("growth_model_resources", package = "envirotyping"))), collapse = ", "))
 

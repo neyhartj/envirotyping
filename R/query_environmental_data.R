@@ -257,8 +257,6 @@ get_historical_weather_data <- function(location.info, start.year, end.year, sou
 #'
 #' @param trial.info A list of trial metadata that includes the trial name, year,
 #' latitude, and longitude. This can be a \code{data.frame}. See \emph{Details} for specific information.
-#' @param grid.size The bounding box grid size.
-#' @param hwsd.path Path to the hwsd.bil file. This file can be downloaded \href{http://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v12/en/}{here} (see HWSD Raster).
 #' @param verbose Logical. Should progress messages be printed?
 #'
 #' @details
@@ -268,131 +266,81 @@ get_historical_weather_data <- function(location.info, start.year, end.year, sou
 #'
 #' @examples
 #' \dontrun{
-#' # Define the path to the hwsd.bil file
-#' hwsd.path <- "Z:/BARLEY_LAB/Climate Data/RawData/SoilData/HWSD/SpatialFiles/hwsd.bil"
-#' hwsd.path <- "path/to/hwsd.bil"
-#'
 #' # Use the included trial_info data
-#' trial_soil <- get_soil_data(trial.info = trial_info, hwsd.path = hwsd.path)
+#' trial_soil <- get_soil_data(trial.info = trial_info)
 #' }
 #'
-#' @import sp
-#' @import raster
-#' @import rhwsd
-#' @importFrom DBI dbListTables dbDisconnect dbReadTable
-#' @importFrom readr parse_guess
-#' @importFrom tibble as_tibble
+#' @import hwsdr
+#' @importFrom tibble as_tibble tibble
 #'
 #' @export
 #'
-get_soil_data <- function(trial.info, grid.size = 0.01, hwsd.path, verbose = TRUE) {
+get_soil_data <- function(trial.info, verbose = TRUE) {
 
   ## Error check ##
   # Check trial.info
   invisible(check_trial_info(trial.info = trial.info))
   # Number of trial
   nTrials <- length(trial.info$trial)
-  # Check grid.size
-  stopifnot(is.numeric(grid.size), grid.size > 0)
-  # Check hwsd.path
-  stopifnot(file.exists(hwsd.path))
   # Check verbose
   stopifnot(is.logical(verbose))
 
-
-  # Get the hwsd raster
-  hwsd <- raster(x = hwsd.path)
-  # Modify projection
-  suppressWarnings(proj4string(hwsd) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
-  # Establish a connection to the hwsd sql database
-  con <- get_hwsd_con()
+  # Get unique location, latitude, longitude rows
+  trial.info1 <- trial_info[, c("latitude", "longitude")]
+  trial.info1 <- trial.info1[!duplicated(trial.info1),]
+  trial.info1$site <- paste0("site", seq_len(nrow(trial.info1)))
+  trial.info1 <- trial.info1[,c("site", "latitude", "longitude")]
 
   # Create an output list for each trial
-  output <- vector("list", length = nTrials)
+  output <- vector("list", length = nrow(trial.info1))
 
   # Iterate over the trials
   for (i in seq_along(output)) {
-    trial_name <- trial.info$trial[i]
+    coords <- c(trial.info1$latitude[i], trial.info1$longitude[i])
     # Print a message
-    if (verbose) cat("\nRetrieving soil data for trial: ", trial_name)
+    if (verbose) cat("\nRetrieving soil data for coordinates: ", paste0(round(coords, 2), collapse = ", "))
 
-    lat <- trial.info$latitude[i]
-    long <- trial.info$longitude[i]
+    grid <- c(coords - grid.size, coords + grid.size)
 
-    # Extract the soil data
-    soil_dat_extracted <- get_hwsd2(lat = lat, long = long, gridsize = grid.size, hwsd.raster = hwsd, con = con)
+    values <- ws_subset(location = coords, site = trial.info1$site[i])
 
     # Add trial names to the ouput
-    output[[i]] <- cbind(soil_dat_extracted, trial = trial_name)
+    output[[i]] <- values
 
   }
+
+  #
 
   # Edit the output
   # First row bind
-  soil_data_out2 <- soil_data_out1 <- do.call("rbind", output)
+  soil_data_out1 <- do.call("rbind", output)
 
-  # List the tables with codes (i.e., starting with 'D_')
-  code_table_names <- grep(pattern = "^D_", x = dbListTables(con), value = TRUE)
-  # Edit (to remove the 'D_' prefix
-  code_table_names1 <- gsub(pattern = "^D_", replacement = "", x = code_table_names)
-  # Find the corresponding column number in soil_data_out1
-  #   KATS comment: hard coding of these numbers looks very fragile! There must be some way to
-  #   query the soil database to know that ADD_Prop is column #23, AWC is column #17, ...
-  #   Otherwise, if they change their order, there will be trouble!
-  code_table_names2 <- setNames(object = c(23, 17, 0, 15, 21, 5, 18, 20, 22, 0, 0, 0, 0, 14, 28),
-                                nm = code_table_names1)
-  # Remove 0s
-  code_table_names_use <- code_table_names2[code_table_names2 != 0]
+  # Rename variables; merge the variable data.frame
+  soil_data_out2 <- merge(x = soil_data_out1[,c("site", "parameter", "value")],
+                          y = as.data.frame(hwsd.variables)[,c("field", "type", "variable")],
+                          by.x = "parameter", by.y = "field")
 
-  ## Edit these values in the df
-  soil_data_recode <- mapply(soil_data_out1[code_table_names_use], code_table_names[code_table_names2 != 0],
-                             FUN = function(.x, .y) {
-                               # Get the lookup table
-                               lookup <- dbReadTable(conn = con, name = .y)
-                               # Convert values and return
-                               lookup$VALUE[match(x = .x, table = lookup$CODE)]
-                             }, SIMPLIFY = FALSE)
+  # Subset only properties
+  soil_data_out3 <- subset(soil_data_out2, type == "property")
 
-  for (i in seq_along(soil_data_recode)) soil_data_out2[[code_table_names_use[i]]] <- soil_data_recode[[i]]
+  # Select the site, value, and variable columns
+  soil_data_out4 <- soil_data_out3[,c("site", "variable", "value")]
 
-  # Parse guess
-  # KATS comment -- This needs more explanation. What is the purpose of these nested apply functions?
-  # Something like: Use the parse_guess function to assign data types to data frame columns
-  #  (e.g., integer, float, character, logical)
-  soil_data_out3 <- soil_data_out2
-  soil_data_out3[sapply(X = soil_data_out3, FUN = is.character)] <- lapply(X = soil_data_out3[sapply(X = soil_data_out3, FUN = is.character)],
-                                                                           FUN = parse_guess)
-  # Rename columns using the more descriptive names from the HWSD
-  soil_data_out4 <- soil_data_out3
-  for (nm in setdiff(names(soil_data_out4), "trial")) {
-    renm <- hwsd.variables$variable[match(x = nm, table = hwsd.variables$field)]
-    names(soil_data_out4)[names(soil_data_out4) == nm] <- renm
-  }
+  # Convert from long to wide
+  soil_data_out5 <- reshape(data = soil_data_out4, direction = "wide", idvar = "site", timevar = "variable", v.names = "value")
+  names(soil_data_out5) <- sub(pattern = "^value\\.", replacement = "", x = names(soil_data_out5))
 
-  ## Disconnect
-  dbDisconnect(con)
+  # Create a nested tibble
+  soil_data_out6 <- tibble(site = soil_data_out5$site, data = split(soil_data_out5, soil_data_out5$site))
 
-  # Create a data.frame to export
-  trial.info1 <- as_tibble(as.data.frame(trial.info))
-
-  # Select only relevant numeric property columns
-  soil_data_numeric <- soil_data_out4[hwsd.variables$variable[hwsd.variables$type == "property"]]
-  soil_data_numeric <- soil_data_numeric[sapply(X = soil_data_numeric, FUN = is.numeric)]
-  soil_data_out5 <- cbind(soil_data_out4[c("trial","share_in_mapping_unit")], soil_data_numeric)
-
-  # Split soil data by trial
-  soil_data_out5_split <- split(soil_data_out5, soil_data_out5$trial)
-  # For each trial, calculate weighted mean of variables based on share of the mapping unit
-  soil_data_out6 <- lapply(X = soil_data_out5_split, FUN = function(trial_soil) {
-    as.data.frame(sapply(X = trial_soil[names(soil_data_numeric)], simplify = FALSE,
-                         FUN = weighted.mean, w = trial_soil$share_in_mapping_unit, na.rm = TRUE))
-  })
-
-  ## Add the list of results
-  trial.info1$data <- unname(soil_data_out6[trial.info1$trial])
+  # Merge with the trial_info
+  soil_data_out7 <- as_tibble(merge(merge(trial_info, trial.info1), soil_data_out6))
+  # Drop unnecessary columns
+  soil_data_out8 <- soil_data_out7[,c(names(trial_info), "data")]
+  soil_data_out8$data <- unname(soil_data_out8$data)
 
   # Return the df with a special attribute
-  return(structure(trial.info1, data.col = "soil"))
+  return(structure(soil_data_out8, data.col = "soil"))
 
 }
 

@@ -35,9 +35,6 @@ Uses the crop calendar of long-term planting date information from the Center
 for Sustainability and the Global Environment at the University of Wisconsin to
 predict historical planting dates using historical weather data.
 }
-\details{
-
-}
 \examples{
 
 \dontrun{

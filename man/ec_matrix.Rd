@@ -32,9 +32,6 @@ ec_matrix(
 \description{
 Creates a \code{n x p} matrix for \code{n} environments and \code{p} covariables for use in modeling or to create environmental relationship matrices. Values of the covariables are centered and scaled.
 }
-\details{
-
-}
 \examples{
 \dontrun{
 # Get weather data for each trial

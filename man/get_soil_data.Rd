@@ -4,15 +4,11 @@
 \alias{get_soil_data}
 \title{Query soil data from the Harmonized World Soil Database}
 \usage{
-get_soil_data(trial.info, grid.size = 0.01, hwsd.path, verbose = TRUE)
+get_soil_data(trial.info, verbose = TRUE)
 }
 \arguments{
 \item{trial.info}{A list of trial metadata that includes the trial name, year,
 latitude, and longitude. This can be a \code{data.frame}. See \emph{Details} for specific information.}
-
-\item{grid.size}{The bounding box grid size.}
-
-\item{hwsd.path}{Path to the hwsd.bil file. This file can be downloaded \href{http://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v12/en/}{here} (see HWSD Raster).}
 
 \item{verbose}{Logical. Should progress messages be printed?}
 }
@@ -25,12 +21,8 @@ value across soil IDs weighted by the share of that soil ID in the mapping unit.
 }
 \examples{
 \dontrun{
-# Define the path to the hwsd.bil file
-hwsd.path <- "Z:/BARLEY_LAB/Climate Data/RawData/SoilData/HWSD/SpatialFiles/hwsd.bil"
-hwsd.path <- "path/to/hwsd.bil"
-
 # Use the included trial_info data
-trial_soil <- get_soil_data(trial.info = trial_info, hwsd.path = hwsd.path)
+trial_soil <- get_soil_data(trial.info = trial_info)
 }
 
 }
