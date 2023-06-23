@@ -24,7 +24,7 @@ devtools::install_github("neyhartj/envirotyping")
 ## Examples
 
 The [package
-vignette](https://neyhartj.github.io/envirotyping/articles/using_envirotyping.html)
+vignette](https://neyhartj.github.io/envirotyping/using_envirotyping.html)
 demonstrates a complete workflow, including:
 
 - Querying weather and soil data from remote databases
