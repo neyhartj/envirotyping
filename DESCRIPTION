@@ -17,6 +17,7 @@ Depends:
 Imports:
     daymetr,
     nasapower,
+    hwsdr,
     raster,
     sp,
     apsimx,
@@ -35,7 +36,5 @@ Suggests:
     rmarkdown,
     slider,
     sommer
-Remotes:
-    github::dlebauer/rhwsd
 VignetteBuilder: knitr
 RoxygenNote: 7.2.3
